@@ -77,6 +77,9 @@
         return array;
       }
 
+      // Store the current problems globally so we can toggle answers without regenerating
+      let currentProblems = [];
+
       function generateQuestions() {
         let sinProblems = angles.map((angle) => ({ 
           question: `\\sin(${angle}) = `, 
@@ -91,15 +94,18 @@
           type: 'cos'
         }));
 
-        let allProblems = shuffleArray([...sinProblems, ...cosProblems]);
+        currentProblems = shuffleArray([...sinProblems, ...cosProblems]);
+        displayProblems();
+      }
 
+      function displayProblems() {
         const container = document.getElementById("questionsContainer");
         // Clear existing content
         container.innerHTML = '';
         
         const showAnswers = document.getElementById('showAnswers').checked;
         
-        for (let i = 0; i < allProblems.length; i++) {
+        for (let i = 0; i < currentProblems.length; i++) {
           const questionDiv = document.createElement("div");
           questionDiv.classList.add("question");
 
@@ -113,9 +119,9 @@
           questionDiv.appendChild(latexDiv);
           
           // Set the question text
-          let displayText = allProblems[i].question;
+          let displayText = currentProblems[i].question;
           if (showAnswers) {
-            displayText += allProblems[i].answer;
+            displayText += currentProblems[i].answer;
           }
           
           MQ.StaticMath(latexDiv).latex(displayText);
@@ -129,7 +135,7 @@
       document.getElementById('regenerateBtn').addEventListener('click', generateQuestions);
       
       // Add event listener for the show answers checkbox
-      document.getElementById('showAnswers').addEventListener('change', generateQuestions);
+      document.getElementById('showAnswers').addEventListener('change', displayProblems);
     </script>
   </body>
 </html>
