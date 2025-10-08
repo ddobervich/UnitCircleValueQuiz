@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Trigonometry Questions</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/mathquill/build/mathquill.css"
+    />
+    <style>
+        .questions-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Creates two equal-width columns */
+            gap: 20px; /* Adds space between columns */
+            margin: 20px;
+        }
+        .question {
+            margin: 0px 0;
+        }
+    </style>
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div style="text-align: center; margin: 20px;">
+      <button id="regenerateBtn" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 20px;">
+        Generate New Problems
+      </button>
+      <label style="font-size: 16px; cursor: pointer;">
+        <input type="checkbox" id="showAnswers" style="margin-right: 8px; transform: scale(1.2);">
+        Show Answers
+      </label>
+    </div>
+    <div class="questions-container" id="questionsContainer">
+      <!-- Questions will be injected here -->
+    </div>
+
+    <script src="https://unpkg.com/mathquill/build/mathquill.js"></script>
+    <script>
+      // Initialize MathQuill
+      const MQ = MathQuill.getInterface(2);
+
+      // Common angles in radians
+      var angles = [
+        "0",
+        "\\frac{\\pi}{6}",
+        "\\frac{\\pi}{4}",
+        "\\frac{\\pi}{3}",
+        "\\frac{\\pi}{2}",
+        "\\pi",
+        "\\frac{5\\pi}{6}",
+        "\\frac{2\\pi}{3}",
+        "\\frac{3\\pi}{4}",
+      ];
+
+      // Exact values for sin and cos of common angles
+      var exactValues = {
+        "0": { sin: "0", cos: "1" },
+        "\\frac{\\pi}{6}": { sin: "\\frac{1}{2}", cos: "\\frac{\\sqrt{3}}{2}" },
+        "\\frac{\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "\\frac{\\sqrt{2}}{2}" },
+        "\\frac{\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "\\frac{1}{2}" },
+        "\\frac{\\pi}{2}": { sin: "1", cos: "0" },
+        "\\pi": { sin: "0", cos: "-1" },
+        "\\frac{5\\pi}{6}": { sin: "\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
+        "\\frac{2\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "-\\frac{1}{2}" },
+        "\\frac{3\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" }
+      };
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          // Generate a random index from 0 to i
+          const j = Math.floor(Math.random() * (i + 1));
+          // Swap array[i] with array[j]
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function generateQuestions() {
+        let sinProblems = angles.map((angle) => ({ 
+          question: `\\sin(${angle}) = `, 
+          answer: exactValues[angle].sin,
+          angle: angle,
+          type: 'sin'
+        }));
+        let cosProblems = angles.map((angle) => ({ 
+          question: `\\cos(${angle}) = `, 
+          answer: exactValues[angle].cos,
+          angle: angle,
+          type: 'cos'
+        }));
+
+        let allProblems = shuffleArray([...sinProblems, ...cosProblems]);
+
+        const container = document.getElementById("questionsContainer");
+        // Clear existing content
+        container.innerHTML = '';
+        
+        const showAnswers = document.getElementById('showAnswers').checked;
+        
+        for (let i = 0; i < allProblems.length; i++) {
+          const questionDiv = document.createElement("div");
+          questionDiv.classList.add("question");
+
+          // Create a span for the question number
+          const numberSpan = document.createElement('span');
+          numberSpan.textContent = `${i + 1}. `;  // Sequential numbering
+          questionDiv.appendChild(numberSpan);
+
+          const latexDiv = document.createElement("span");
+          latexDiv.classList.add("math-field");
+          questionDiv.appendChild(latexDiv);
+          
+          // Set the question text
+          let displayText = allProblems[i].question;
+          if (showAnswers) {
+            displayText += allProblems[i].answer;
+          }
+          
+          MQ.StaticMath(latexDiv).latex(displayText);
+          container.appendChild(questionDiv);
+        }
+      }
+
+      generateQuestions();
+
+      // Add event listener for the regenerate button
+      document.getElementById('regenerateBtn').addEventListener('click', generateQuestions);
+      
+      // Add event listener for the show answers checkbox
+      document.getElementById('showAnswers').addEventListener('change', generateQuestions);
+    </script>
+  </body>
+</html>
