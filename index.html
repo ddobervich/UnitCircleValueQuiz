@@ -27,9 +27,17 @@
       <button id="regenerateBtn" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 20px;">
         Generate New Problems
       </button>
-      <label style="font-size: 16px; cursor: pointer;">
+      <label style="font-size: 16px; cursor: pointer; margin-right: 20px;">
         <input type="checkbox" id="showAnswers" style="margin-right: 8px; transform: scale(1.2);">
         Show Answers
+      </label>
+      <label style="font-size: 16px; cursor: pointer; margin-right: 20px;">
+        <input type="checkbox" id="fullCircle" style="margin-right: 8px; transform: scale(1.2);">
+        Full Circle (0 to 2π)
+      </label>
+      <label style="font-size: 16px; cursor: pointer;">
+        <input type="checkbox" id="includeNegative" style="margin-right: 8px; transform: scale(1.2);">
+        Include Negative Angles
       </label>
     </div>
     <div class="questions-container" id="questionsContainer">
@@ -41,7 +49,7 @@
       // Initialize MathQuill
       const MQ = MathQuill.getInterface(2);
 
-      // Common angles in radians
+      // Common angles in radians (upper half: 0 to π)
       var angles = [
         "0",
         "\\frac{\\pi}{6}",
@@ -54,6 +62,59 @@
         "\\frac{3\\pi}{4}",
       ];
 
+      // Common angles in radians (full circle: 0 to 2π)
+      var anglesFullCircle = [
+        "0",
+        "\\frac{\\pi}{6}",
+        "\\frac{\\pi}{4}",
+        "\\frac{\\pi}{3}",
+        "\\frac{\\pi}{2}",
+        "\\frac{2\\pi}{3}",
+        "\\frac{3\\pi}{4}",
+        "\\frac{5\\pi}{6}",
+        "\\pi",
+        "\\frac{7\\pi}{6}",
+        "\\frac{5\\pi}{4}",
+        "\\frac{4\\pi}{3}",
+        "\\frac{3\\pi}{2}",
+        "\\frac{5\\pi}{3}",
+        "\\frac{7\\pi}{4}",
+        "\\frac{11\\pi}{6}",
+        "2\\pi"
+      ];
+
+      // Negative angles (upper half: -π to 0)
+      var anglesNegative = [
+        "-\\frac{\\pi}{6}",
+        "-\\frac{\\pi}{4}",
+        "-\\frac{\\pi}{3}",
+        "-\\frac{\\pi}{2}",
+        "-\\frac{2\\pi}{3}",
+        "-\\frac{3\\pi}{4}",
+        "-\\frac{5\\pi}{6}",
+        "-\\pi"
+      ];
+
+      // Negative angles (full circle: -2π to 0)
+      var anglesNegativeFullCircle = [
+        "-\\frac{\\pi}{6}",
+        "-\\frac{\\pi}{4}",
+        "-\\frac{\\pi}{3}",
+        "-\\frac{\\pi}{2}",
+        "-\\frac{2\\pi}{3}",
+        "-\\frac{3\\pi}{4}",
+        "-\\frac{5\\pi}{6}",
+        "-\\pi",
+        "-\\frac{7\\pi}{6}",
+        "-\\frac{5\\pi}{4}",
+        "-\\frac{4\\pi}{3}",
+        "-\\frac{3\\pi}{2}",
+        "-\\frac{5\\pi}{3}",
+        "-\\frac{7\\pi}{4}",
+        "-\\frac{11\\pi}{6}",
+        "-2\\pi"
+      ];
+
       // Exact values for sin and cos of common angles
       var exactValues = {
         "0": { sin: "0", cos: "1" },
@@ -61,10 +122,35 @@
         "\\frac{\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "\\frac{\\sqrt{2}}{2}" },
         "\\frac{\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "\\frac{1}{2}" },
         "\\frac{\\pi}{2}": { sin: "1", cos: "0" },
-        "\\pi": { sin: "0", cos: "-1" },
-        "\\frac{5\\pi}{6}": { sin: "\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
         "\\frac{2\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "-\\frac{1}{2}" },
-        "\\frac{3\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" }
+        "\\frac{3\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" },
+        "\\frac{5\\pi}{6}": { sin: "\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
+        "\\pi": { sin: "0", cos: "-1" },
+        "\\frac{7\\pi}{6}": { sin: "-\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
+        "\\frac{5\\pi}{4}": { sin: "-\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" },
+        "\\frac{4\\pi}{3}": { sin: "-\\frac{\\sqrt{3}}{2}", cos: "-\\frac{1}{2}" },
+        "\\frac{3\\pi}{2}": { sin: "-1", cos: "0" },
+        "\\frac{5\\pi}{3}": { sin: "-\\frac{\\sqrt{3}}{2}", cos: "\\frac{1}{2}" },
+        "\\frac{7\\pi}{4}": { sin: "-\\frac{\\sqrt{2}}{2}", cos: "\\frac{\\sqrt{2}}{2}" },
+        "\\frac{11\\pi}{6}": { sin: "-\\frac{1}{2}", cos: "\\frac{\\sqrt{3}}{2}" },
+        "2\\pi": { sin: "0", cos: "1" },
+        // Negative angles
+        "-\\frac{\\pi}{6}": { sin: "-\\frac{1}{2}", cos: "\\frac{\\sqrt{3}}{2}" },
+        "-\\frac{\\pi}{4}": { sin: "-\\frac{\\sqrt{2}}{2}", cos: "\\frac{\\sqrt{2}}{2}" },
+        "-\\frac{\\pi}{3}": { sin: "-\\frac{\\sqrt{3}}{2}", cos: "\\frac{1}{2}" },
+        "-\\frac{\\pi}{2}": { sin: "-1", cos: "0" },
+        "-\\frac{2\\pi}{3}": { sin: "-\\frac{\\sqrt{3}}{2}", cos: "-\\frac{1}{2}" },
+        "-\\frac{3\\pi}{4}": { sin: "-\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" },
+        "-\\frac{5\\pi}{6}": { sin: "-\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
+        "-\\pi": { sin: "0", cos: "-1" },
+        "-\\frac{7\\pi}{6}": { sin: "\\frac{1}{2}", cos: "-\\frac{\\sqrt{3}}{2}" },
+        "-\\frac{5\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "-\\frac{\\sqrt{2}}{2}" },
+        "-\\frac{4\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "-\\frac{1}{2}" },
+        "-\\frac{3\\pi}{2}": { sin: "1", cos: "0" },
+        "-\\frac{5\\pi}{3}": { sin: "\\frac{\\sqrt{3}}{2}", cos: "\\frac{1}{2}" },
+        "-\\frac{7\\pi}{4}": { sin: "\\frac{\\sqrt{2}}{2}", cos: "\\frac{\\sqrt{2}}{2}" },
+        "-\\frac{11\\pi}{6}": { sin: "\\frac{1}{2}", cos: "\\frac{\\sqrt{3}}{2}" },
+        "-2\\pi": { sin: "0", cos: "1" }
       };
 
       function shuffleArray(array) {
@@ -81,20 +167,39 @@
       let currentProblems = [];
 
       function generateQuestions() {
-        let sinProblems = angles.map((angle) => ({ 
+        // Choose angle set based on checkbox state
+        const useFullCircle = document.getElementById('fullCircle').checked;
+        const includeNegative = document.getElementById('includeNegative').checked;
+        
+        let angleSet;
+        if (includeNegative) {
+          // When including negative angles, combine positive and negative angle sets
+          if (useFullCircle) {
+            angleSet = [...anglesFullCircle, ...anglesNegativeFullCircle];
+          } else {
+            angleSet = [...angles, ...anglesNegative];
+          }
+        } else {
+          // Use only positive angles
+          angleSet = useFullCircle ? anglesFullCircle : angles;
+        }
+        
+        let sinProblems = angleSet.map((angle) => ({ 
           question: `\\sin(${angle}) = `, 
           answer: exactValues[angle].sin,
           angle: angle,
           type: 'sin'
         }));
-        let cosProblems = angles.map((angle) => ({ 
+        let cosProblems = angleSet.map((angle) => ({ 
           question: `\\cos(${angle}) = `, 
           answer: exactValues[angle].cos,
           angle: angle,
           type: 'cos'
         }));
 
-        currentProblems = shuffleArray([...sinProblems, ...cosProblems]);
+        // Shuffle all problems and take first 18
+        const allProblems = shuffleArray([...sinProblems, ...cosProblems]);
+        currentProblems = allProblems.slice(0, 18);
         displayProblems();
       }
 
@@ -136,6 +241,12 @@
       
       // Add event listener for the show answers checkbox
       document.getElementById('showAnswers').addEventListener('change', displayProblems);
+      
+      // Add event listener for the full circle checkbox
+      document.getElementById('fullCircle').addEventListener('change', generateQuestions);
+      
+      // Add event listener for the include negative angles checkbox
+      document.getElementById('includeNegative').addEventListener('change', generateQuestions);
     </script>
   </body>
 </html>
